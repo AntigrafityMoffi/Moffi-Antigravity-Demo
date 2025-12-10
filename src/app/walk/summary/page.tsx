@@ -22,12 +22,15 @@ import { cn } from "@/lib/utils";
 
 import { useSearchParams } from "next/navigation";
 
-export default function WalkSummaryPage() {
+import { Suspense } from "react";
+
+function WalkSummaryContent() {
     const router = useRouter();
     const { currentUser } = useSocial();
     const searchParams = useSearchParams();
     const sessionId = searchParams?.get('id');
 
+    // ... logic ...
     // Find the session (convert both to string or number to be safe)
     const session = currentUser.walks?.find(w => w.id.toString() === sessionId) || currentUser.walks?.[0]; // Fallback to latest
 
@@ -346,5 +349,13 @@ export default function WalkSummaryPage() {
 
             </div>
         </main>
+    );
+}
+
+export default function WalkSummaryPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">Yükleniyor...</div>}>
+            <WalkSummaryContent />
+        </Suspense>
     );
 }
