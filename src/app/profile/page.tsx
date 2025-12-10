@@ -33,9 +33,11 @@ export default function ProfilePage() {
 
     // Mock posts logic (kept for visual consistency until real backend)
     const { posts } = useSocial();
+    const { updateProfile } = useAuth(); // Destructure updateProfile
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Added state
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false); // New loading state
 
     const handleLogout = () => {
         logout(); // Clear context/storage
@@ -46,14 +48,26 @@ export default function ProfilePage() {
     const myPosts = posts.filter(p => p.user.name === currentUser.username);
 
     const handleAvatarClick = () => {
-        fileInputRef.current?.click();
+        if (!isUploading) fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // updateProfileImage(file); // TODO: Move image logic to AuthContext later
-            console.log("File selected:", file);
+            try {
+                setIsUploading(true);
+                // Dynamically import to avoid server-side issues (though this is client component)
+                const { compressImage } = await import('@/lib/imageUtils');
+                const compressedBase64 = await compressImage(file, 600, 0.8); // 80% quality, max 600px
+
+                updateProfile({ avatar: compressedBase64 });
+                console.log("Avatar updated successfully");
+            } catch (error) {
+                console.error("Upload failed", error);
+                alert("Resim yüklenirken bir hata oluştu.");
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -94,8 +108,12 @@ export default function ProfilePage() {
                                         </div>
                                     )}
                                     {/* Overlay hint */}
-                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-[10px] text-white font-bold">Edit</span>
+                                    <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isUploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                        {isUploading ? (
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <span className="text-[10px] text-white font-bold">Düzenle</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

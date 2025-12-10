@@ -2,15 +2,57 @@
 
 import { BusinessSidebar } from "@/components/business/Sidebar";
 import { AnalyticsChart } from "@/components/business/AnalyticsChart";
+import { CreateCampaignModal } from "@/components/business/CreateCampaignModal";
+import { useAuth, User } from "@/context/AuthContext";
 import { ArrowUpRight, Users, Eye, MousePointerClick, Wallet, Megaphone, LucideIcon, Map as MapIcon, Bell, Calendar, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
 
 export default function BusinessDashboard() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false); // Modal State
+    const { user, getAllUsers } = useAuth();
+
+    const allUsers: User[] = getAllUsers();
+    // Filter out admin from the count if desired, or keep total
+    const totalUsers = allUsers.filter(u => u.role !== 'admin').length;
+
+    // Check new users from today
+    const today = new Date().toDateString();
+    const newUsersToday = allUsers.filter(u => new Date(u.joinedAt).toDateString() === today && u.role !== 'admin').length;
+
+    // Get active campaigns count (read from local storage safely)
+    const [activeCampaignsCount, setActiveCampaignsCount] = React.useState(0);
+
+    React.useEffect(() => {
+        const stored = localStorage.getItem('moffipet_campaigns');
+        if (stored) {
+            const campaigns = JSON.parse(stored);
+            setActiveCampaignsCount(campaigns.filter((c: any) => c.status === 'active').length);
+        }
+    }, []); // Run once on mount
+
+    // Callback when new campaign is created
+    const handleCampaignCreated = () => {
+        const stored = localStorage.getItem('moffipet_campaigns');
+        if (stored) {
+            const campaigns = JSON.parse(stored);
+            setActiveCampaignsCount(campaigns.filter((c: any) => c.status === 'active').length);
+        }
+    };
+
+    // Get recent 5 users for activity feed
+    const recentUsers = [...allUsers].filter(u => u.role !== 'admin').sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()).slice(0, 5);
 
     return (
         <div className="flex min-h-screen bg-gray-50/50 font-sans">
+            {/* Modal */}
+            <CreateCampaignModal
+                isOpen={isCampaignModalOpen}
+                onClose={() => setIsCampaignModalOpen(false)}
+                onCreated={handleCampaignCreated}
+            />
+
             {/* Sidebar */}
             <BusinessSidebar
                 isMobileOpen={isMobileMenuOpen}
@@ -32,14 +74,14 @@ export default function BusinessDashboard() {
 
                         <div>
                             <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-1">Kontrol Paneli</h1>
-                            <p className="text-xs md:text-base text-gray-500 font-medium">Hoşgeldin, Starbucks Kadıköy 👋</p>
+                            <p className="text-xs md:text-base text-gray-500 font-medium">Hoşgeldin, {user?.username || 'Admin'} 👋</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
                         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200/50 shadow-sm text-gray-500 text-xs md:text-sm font-medium whitespace-nowrap">
                             <Calendar className="w-4 h-4" />
-                            <span>10 Aralık 2025</span>
+                            <span>{new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         </div>
                         <button className="w-10 h-10 rounded-xl bg-white border border-gray-200/50 flex flex-shrink-0 items-center justify-center text-gray-500 shadow-sm relative hover:bg-gray-50">
                             <Bell className="w-5 h-5" />
@@ -55,7 +97,10 @@ export default function BusinessDashboard() {
                                 <span className="text-sm font-black text-gray-900">₺4,250.00</span>
                             </div>
                         </div>
-                        <button className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all whitespace-nowrap hidden md:block">
+                        <button
+                            onClick={() => setIsCampaignModalOpen(true)}
+                            className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all whitespace-nowrap hidden md:block"
+                        >
                             + Yeni Kampanya
                         </button>
                     </div>
@@ -71,9 +116,9 @@ export default function BusinessDashboard() {
                         color="blue"
                     />
                     <StatCard
-                        title="Fiziksel Ziyaret"
-                        value="854"
-                        trend="+5%"
+                        title="Toplam Kullanıcı"
+                        value={totalUsers.toString()}
+                        trend={`+${newUsersToday} Yeni`}
                         icon={Users}
                         color="green"
                     />
@@ -86,7 +131,7 @@ export default function BusinessDashboard() {
                     />
                     <StatCard
                         title="Aktif Kampanya"
-                        value="3"
+                        value={activeCampaignsCount.toString()}
                         trend="Aktif"
                         icon={Megaphone}
                         color="orange"
@@ -127,7 +172,7 @@ export default function BusinessDashboard() {
                                 </div>
                                 <h3 className="text-lg font-bold mb-2">Yakınlık Bildirimi</h3>
                                 <p className="text-indigo-100 text-sm opacity-90 leading-relaxed font-medium">
-                                    Şu an mağazanızın <strong>100m</strong> yakınında <strong>12</strong> potansiyel müşteri yürüyor.
+                                    Şu an mağazanızın <strong>100m</strong> yakınında <strong>{Math.floor(Math.random() * 5) + 8}</strong> potansiyel müşteri yürüyor.
                                 </p>
                             </div>
 
@@ -139,20 +184,22 @@ export default function BusinessDashboard() {
 
                         {/* Recent Activity */}
                         <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-lg shadow-gray-100">
-                            <h3 className="font-bold text-gray-900 mb-4 text-sm">Son Aktiviteler</h3>
+                            <h3 className="font-bold text-gray-900 mb-4 text-sm">Son Aktiviteler (Yeni Üyeler)</h3>
                             <div className="space-y-4">
-                                {[1, 2, 3].map((i) => (
+                                {recentUsers.length > 0 ? recentUsers.map((u, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
-                                            <img src={`https://i.pravatar.cc/100?img=${i + 15}`} className="w-full h-full object-cover" />
+                                            <img src={u.avatar || `https://i.pravatar.cc/100?u=${u.email}`} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-xs font-bold text-gray-900">@user{i}78</div>
-                                            <div className="text-[10px] text-gray-500">MoffiWalk ile yakınınızdan geçti</div>
+                                            <div className="text-xs font-bold text-gray-900">@{u.username}</div>
+                                            <div className="text-[10px] text-gray-500">MoffiPet'e katıldı</div>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400">{i}dk</span>
+                                        <span className="text-[10px] font-bold text-gray-400">Yeni</span>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="text-xs text-gray-400 text-center py-4">Henüz yeni üye yok.</div>
+                                )}
                             </div>
                         </div>
                     </div>

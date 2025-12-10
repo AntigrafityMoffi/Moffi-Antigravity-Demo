@@ -26,6 +26,7 @@ interface AuthContextType {
     signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     updateProfile: (data: Partial<User>) => void;
+    getAllUsers: () => User[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -137,8 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('moffipet_users', JSON.stringify(updatedStore));
     };
 
+    const getAllUsers = (): User[] => {
+        if (typeof window === 'undefined') return [];
+        return JSON.parse(localStorage.getItem('moffipet_users') || '[]');
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile }}>
+        <AuthContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile, getAllUsers }}>
             {children}
         </AuthContext.Provider>
     );

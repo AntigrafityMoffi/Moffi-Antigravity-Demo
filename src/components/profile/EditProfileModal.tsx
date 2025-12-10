@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
-import { useSocial, UserProfile } from "@/context/SocialContext";
+import { useAuth, User } from "@/context/AuthContext";
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -10,20 +10,36 @@ interface EditProfileModalProps {
 }
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
-    const { currentUser, updateUserInfo } = useSocial();
+    const { user, updateProfile } = useAuth();
 
     // Local state for form fields
     const [formData, setFormData] = useState({
-        name: currentUser.name,
-        username: currentUser.username,
-        bio: currentUser.bio
+        name: user?.username || "",
+        username: user?.username || "", // Note: Schema uses 'username' for display name in some places
+        bio: user?.bio || ""
     });
+
+    // Update form when user changes (e.g. open modal)
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                name: user.username,
+                username: user.username,
+                bio: user.bio || ""
+            });
+        }
+    }, [user, isOpen]);
 
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        updateUserInfo(formData);
+        if (user) {
+            updateProfile({
+                username: formData.username,
+                bio: formData.bio
+            });
+        }
         onClose();
     };
 
