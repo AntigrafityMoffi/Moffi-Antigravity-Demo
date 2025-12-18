@@ -135,7 +135,7 @@ export default function GoogleLiveMap({
 
     // We assume the API Key is in env. local
     // DEVELOPMENT MODE: Fallback to provided key if env var fails
-    const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCzIpeqFJEX1Skv-kYXPOMfqSVdrGBHwT4";
+    const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
 
     const userLocation = useMemo(() => ({ lat: userPos[0], lng: userPos[1] }), [userPos]);
     const [routeDest, setRouteDest] = useState<{ lat: number, lng: number } | null>(null);

@@ -1,110 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Shirt, Coffee, Dog, ShoppingBag,
     ChevronRight, ArrowRight, Store,
-    Star, Sparkles, Search, SlidersHorizontal
+    Star, Sparkles, Search, SlidersHorizontal, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// --- MOCK DATA ---
-const MOFFI_PRODUCTS = [
-    {
-        id: 'tshirt-classic',
-        name: 'Premium T-Shirt',
-        category: 'Giyim',
-        price: '₺450',
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop',
-        rating: 4.9,
-        colors: ['#000000', '#ffffff', '#1a1a1a', '#2d3436']
-    },
-    {
-        id: 'hoodie-oversize',
-        name: 'Oversize Hoodie',
-        category: 'Giyim',
-        price: '₺850',
-        image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
-        rating: 4.8,
-        colors: ['#000000', '#e35f5f', '#1a1a1a']
-    },
-    {
-        id: 'ceramic-mug',
-        name: 'Seramik Kupa',
-        category: 'Ev & Yaşam',
-        price: '₺220',
-        image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=800&auto=format&fit=crop',
-        rating: 4.7,
-        colors: ['#ffffff']
-    },
-    {
-        id: 'tote-bag',
-        name: 'Kanvas Çanta',
-        category: 'Aksesuar',
-        price: '₺180',
-        image: 'https://images.unsplash.com/photo-1597484662317-c9253d3d0984?q=80&w=800&auto=format&fit=crop',
-        rating: 4.6,
-        colors: ['#f5f5dc', '#000000']
-    },
-    {
-        id: 'pet-bandana',
-        name: 'Pet Bandana',
-        category: 'Pet Giyim',
-        price: '₺150',
-        image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop',
-        rating: 4.9,
-        colors: ['#ff0000', '#0000ff']
-    },
-    {
-        id: 'phone-case',
-        name: 'Telefon Kılıfı',
-        category: 'Aksesuar',
-        price: '₺290',
-        image: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?q=80&w=800&auto=format&fit=crop',
-        rating: 4.5,
-        colors: ['#000000', '#ffffff']
-    }
-];
-
-const PARTNER_SHOPS = [
-    {
-        id: 'shop-1',
-        name: 'Pati Butik',
-        location: 'Caddebostan',
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=800&auto=format&fit=crop',
-        tags: ['El Yapımı', 'Aksesuar']
-    },
-    {
-        id: 'shop-2',
-        name: 'Woof Design',
-        location: 'Moda',
-        rating: 4.9,
-        image: 'https://images.unsplash.com/photo-1556905200-279565513a2d?q=80&w=800&auto=format&fit=crop',
-        tags: ['Premium', 'Giyim']
-    },
-    {
-        id: 'shop-3',
-        name: 'Happy Paws',
-        location: 'Beşiktaş',
-        rating: 4.6,
-        image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=800&auto=format&fit=crop',
-        tags: ['Oyuncak', 'Yaşam']
-    }
-];
+import { ProductMockService, Product } from "@/services/mock/ProductMockService";
 
 export default function StudioHubPage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'moffi' | 'partners'>('moffi');
     const [selectedCategory, setSelectedCategory] = useState('Tümü');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [partnerShops, setPartnerShops] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const categories = ['Tümü', 'Giyim', 'Aksesuar', 'Ev & Yaşam', 'Pet Giyim'];
 
-    const filteredProducts = selectedCategory === 'Tümü'
-        ? MOFFI_PRODUCTS
-        : MOFFI_PRODUCTS.filter(p => p.category === selectedCategory);
+    // Map Product type to UI display category
+    const getCategoryLabel = (type: string) => {
+        switch (type) {
+            case 'apparel': return 'Giyim';
+            case 'accessory': return 'Aksesuar';
+            case 'home': return 'Ev & Yaşam';
+            case 'pet-apparel': return 'Pet Giyim';
+            default: return 'Genel';
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                if (activeTab === 'moffi') {
+                    const fetchedProducts = await ProductMockService.getAllProducts(selectedCategory);
+                    setProducts(fetchedProducts);
+                } else {
+                    const shops = await ProductMockService.getPartnerShops();
+                    setPartnerShops(shops);
+                }
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [activeTab, selectedCategory]);
 
     return (
         <div className="min-h-screen w-full bg-[#050505] text-white font-sans selection:bg-purple-500/30 overflow-x-hidden">
@@ -208,58 +154,64 @@ export default function StudioHubPage() {
                             </div>
 
                             {/* Product Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredProducts.map((product, index) => (
-                                    <motion.div
-                                        key={product.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        className="group relative bg-[#0c0c0e] rounded-3xl border border-white/5 overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-900/10 cursor-pointer"
-                                        onClick={() => router.push(`/studio/design?productId=${product.id}`)}
-                                    >
-                                        {/* Image Area */}
-                                        <div className="aspect-[4/5] relative overflow-hidden bg-white/5">
-                                            <div className="absolute top-4 left-4 z-10 px-2 py-1 bg-black/60 backdrop-blur rounded-lg text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
-                                                {product.category}
-                                            </div>
-                                            <img
-                                                src={product.image}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                                            />
-                                            {/* Hover Overlay */}
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                                                <div className="bg-white text-black px-6 py-3 rounded-full font-bold text-sm transform scale-90 group-hover:scale-100 transition-transform shadow-xl flex items-center gap-2">
-                                                    <Sparkles className="w-4 h-4" /> Tasarla
+                            {loading ? (
+                                <div className="flex items-center justify-center py-20 text-neutral-500">
+                                    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {products.map((product, index) => (
+                                        <motion.div
+                                            key={product.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            className="group relative bg-[#0c0c0e] rounded-3xl border border-white/5 overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-900/10 cursor-pointer"
+                                            onClick={() => router.push(`/studio/design?productId=${product.id}`)}
+                                        >
+                                            {/* Image Area */}
+                                            <div className="aspect-[4/5] relative overflow-hidden bg-white/5">
+                                                <div className="absolute top-4 left-4 z-10 px-2 py-1 bg-black/60 backdrop-blur rounded-lg text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
+                                                    {product.brand.isMoffi ? 'Moffi Original' : product.brand.name}
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Info Area */}
-                                        <div className="p-5 space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="font-bold text-lg leading-tight group-hover:text-purple-400 transition-colors">
-                                                    {product.name}
-                                                </h3>
-                                                <div className="flex items-center gap-1 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-1.5 py-0.5 rounded">
-                                                    <Star className="w-3 h-3 fill-current" /> {product.rating}
+                                                <img
+                                                    src={product.images.front}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                                {/* Hover Overlay */}
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                                    <div className="bg-white text-black px-6 py-3 rounded-full font-bold text-sm transform scale-90 group-hover:scale-100 transition-transform shadow-xl flex items-center gap-2">
+                                                        <Sparkles className="w-4 h-4" /> Tasarla
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex -space-x-2">
-                                                    {product.colors.map(color => (
-                                                        <div key={color} className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color }} />
-                                                    ))}
-                                                    {product.colors.length > 2 && <div className="w-4 h-4 rounded-full bg-neutral-800 text-[8px] flex items-center justify-center border border-white/20">+</div>}
+                                            {/* Info Area */}
+                                            <div className="p-5 space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-bold text-lg leading-tight group-hover:text-purple-400 transition-colors">
+                                                        {product.name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-1 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-1.5 py-0.5 rounded">
+                                                        <Star className="w-3 h-3 fill-current" /> {product.rating}
+                                                    </div>
                                                 </div>
-                                                <span className="font-mono text-sm opacity-50">{product.price}</span>
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex -space-x-2">
+                                                        {product.colors.map(color => (
+                                                            <div key={color.id} className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color.hex }} title={color.name} />
+                                                        ))}
+                                                        {product.colors.length > 3 && <div className="w-4 h-4 rounded-full bg-neutral-800 text-[8px] flex items-center justify-center border border-white/20">+</div>}
+                                                    </div>
+                                                    <span className="font-mono text-sm opacity-50">₺{product.basePrice}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     )}
 
@@ -283,35 +235,41 @@ export default function StudioHubPage() {
                                 <Store className="w-16 h-16 text-white/10" />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {PARTNER_SHOPS.map((shop, index) => (
-                                    <motion.div
-                                        key={shop.id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="bg-[#0c0c0e] rounded-2xl border border-white/5 p-4 hover:border-blue-500/30 transition-all group cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <img src={shop.image} className="w-16 h-16 rounded-xl object-cover" />
-                                            <div>
-                                                <h4 className="font-bold text-lg">{shop.name}</h4>
-                                                <p className="text-xs text-neutral-500">{shop.location} • ⭐ {shop.rating}</p>
+                            {loading ? (
+                                <div className="flex items-center justify-center py-20 text-neutral-500">
+                                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {partnerShops.map((shop, index) => (
+                                        <motion.div
+                                            key={shop.id}
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="bg-[#0c0c0e] rounded-2xl border border-white/5 p-4 hover:border-blue-500/30 transition-all group cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <img src={shop.image} className="w-16 h-16 rounded-xl object-cover" />
+                                                <div>
+                                                    <h4 className="font-bold text-lg">{shop.name}</h4>
+                                                    <p className="text-xs text-neutral-500">{shop.location} • ⭐ {shop.rating}</p>
+                                                </div>
+                                                <div className="ml-auto p-2 bg-white/5 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                    <ChevronRight className="w-5 h-5" />
+                                                </div>
                                             </div>
-                                            <div className="ml-auto p-2 bg-white/5 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                                                <ChevronRight className="w-5 h-5" />
+                                            <div className="flex gap-2">
+                                                {shop.tags.map((tag: string) => (
+                                                    <span key={tag} className="text-[10px] uppercase font-bold px-2 py-1 bg-white/5 rounded text-neutral-400">
+                                                        {tag}
+                                                    </span>
+                                                ))}
                                             </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {shop.tags.map(tag => (
-                                                <span key={tag} className="text-[10px] uppercase font-bold px-2 py-1 bg-white/5 rounded text-neutral-400">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
