@@ -15,48 +15,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-// --- MOCK CART DATA ---
-const MOCK_CART_ITEMS = [
-    {
-        id: 1,
-        name: "Premium Cotton Hoodie",
-        variant: "Gece Siyahı • M Beden",
-        customized: true,
-        price: 499,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600"
-    },
-    {
-        id: 2,
-        name: "Moffi Bandana",
-        variant: "Kırmızı • Standart",
-        customized: false,
-        price: 149,
-        quantity: 2,
-        image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600"
-    }
-];
+import { useShop } from "@/context/ShopContext";
 
 export default function CartPage() {
     const router = useRouter();
-    const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS);
-
-    const updateQuantity = (id: number, delta: number) => {
-        setCartItems(cartItems.map(item => {
-            if (item.id === id) {
-                const newQty = Math.max(1, item.quantity + delta);
-                return { ...item, quantity: newQty };
-            }
-            return item;
-        }));
-    };
-
-    const removeItem = (id: number) => {
-        setCartItems(cartItems.filter(item => item.id !== id));
-    };
+    const { cart: cartItems, updateQuantity, removeFromCart, cartTotal } = useShop();
 
     // --- CALCS ---
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const subtotal = cartTotal;
     const shipping = subtotal > 750 ? 0 : 59;
     const total = subtotal + shipping;
 
@@ -136,7 +102,7 @@ export default function CartPage() {
 
                                 {/* Delete Action (Hover/Mobile safe) */}
                                 <button
-                                    onClick={() => removeItem(item.id)}
+                                    onClick={() => removeFromCart(item.id)}
                                     className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition p-1"
                                 >
                                     <Trash2 className="w-4 h-4" />

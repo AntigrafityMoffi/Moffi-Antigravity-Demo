@@ -3,6 +3,11 @@ import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
 import { SocialProvider } from "@/context/SocialContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ShopProvider } from "@/context/ShopContext";
+import { PetProvider } from "@/context/PetContext";
+
+import { FloatingControls } from "@/components/common/FloatingControls";
+import { GlobalAIWidget } from "@/components/ai/GlobalAIWidget";
 
 const poppins = Poppins({
   weight: ['400', '600', '700', '900'],
@@ -30,11 +35,17 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${inter.variable} font-sans antialiased`}
       >
-        <SocialProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </SocialProvider>
+        <PetProvider> {/* Added PetProvider wrapper */}
+          <SocialProvider>
+            <AuthProvider>
+              <ShopProvider>
+                {children}
+                <FloatingControls />
+                <GlobalAIWidget />
+              </ShopProvider>
+            </AuthProvider>
+          </SocialProvider>
+        </PetProvider> {/* Closed PetProvider wrapper */}
       </body>
     </html>
   );

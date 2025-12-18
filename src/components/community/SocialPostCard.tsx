@@ -17,10 +17,16 @@ interface PostProps {
         likes: number;
         comments: number;
     };
-    isSponsored?: boolean;
+};
+isSponsored ?: boolean;
+context ?: {
+    type: 'memory';
+    date: string;
+    mood: string;
+};
 }
 
-export function SocialPostCard({ user, content, isSponsored }: PostProps) {
+export function SocialPostCard({ user, content, isSponsored, context }: PostProps) {
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(content.likes);
 
@@ -111,6 +117,26 @@ export function SocialPostCard({ user, content, isSponsored }: PostProps) {
                     </div>
                 </button>
             </div>
+
+            {/* Context Badge (For Memories) */}
+            {isSponsored && context?.type === 'memory' && (
+                <div className="px-4 pb-1">
+                    <span className="text-[10px] font-bold text-[#5B4D9D] flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg w-fit">
+                        <Sparkles className="w-3 h-3" />
+                        Moffi'nin Günlüğünden • {context.date}
+                    </span>
+                </div>
+            )}
+
+            {/* Context Badge (General) */}
+            {!isSponsored && context?.type === 'memory' && (
+                <div className="px-4 pb-1">
+                    <span className="text-[10px] font-bold text-[#5B4D9D] flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg w-fit">
+                        <Sparkles className="w-3 h-3" />
+                        Moffi'nin Günlüğünden • {context.date}
+                    </span>
+                </div>
+            )}
 
             {/* Caption */}
             <div className="px-4 pb-4">

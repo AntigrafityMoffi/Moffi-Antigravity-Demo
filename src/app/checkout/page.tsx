@@ -21,13 +21,19 @@ const STEPS = [
     { id: 3, title: 'Ödeme', icon: CreditCard },
 ];
 
+import { useShop } from "@/context/ShopContext";
+
+// ... STEPS const ...
+
 export default function CheckoutPage() {
     const router = useRouter();
+    const { cartTotal, clearCart } = useShop();
     const [currentStep, setCurrentStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // MOCK DATA for Review
-    const total = 1198;
+    // Calc Total
+    const shipping = cartTotal > 750 ? 0 : 59;
+    const total = cartTotal + shipping;
 
     const handleNext = () => {
         if (currentStep < 3) {
@@ -36,6 +42,7 @@ export default function CheckoutPage() {
             // FINISH
             setIsProcessing(true);
             setTimeout(() => {
+                clearCart(); // Clear global cart
                 router.push('/checkout/success');
             }, 2500);
         }

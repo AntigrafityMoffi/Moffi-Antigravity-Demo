@@ -1,171 +1,159 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-    ArrowLeft,
-    Footprints,
-    Zap,
-    Timer,
-    Crown,
-    Settings,
-    Medal,
-    MapPin,
-    Gift,
-    Store
+    MapPin, Trophy, ChevronRight, ChevronLeft,
+    Flame, Cookie, Timer, Footprints, Play
 } from "lucide-react";
-import { useSocial } from "@/context/SocialContext";
-import { HeroSection } from "@/components/walk/HeroSection";
+import { PLACES } from "@/data/mockPlaces";
+import dynamic from "next/dynamic";
 import { WalkDeals } from "@/components/walk/WalkDeals";
-import { SettingsDrawer } from "@/components/walk/SettingsDrawer";
-import { cn } from "@/lib/utils";
+import { PetSwitcher } from "@/components/common/PetSwitcher";
 
-import { walkService, WalkCampaign } from "@/services/WalkService";
+// Dynamic Import for Google Map
+const GoogleLiveMap = dynamic(() => import('@/components/walk/GoogleLiveMap'), {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-[#242f3e] animate-pulse rounded-[2rem] flex items-center justify-center text-white/20 font-bold">Harita Yükleniyor...</div>
+});
 
-export default function WalkLandingPage() {
+export default function WalkPage() {
     const router = useRouter();
-    const { currentUser, economy } = useSocial();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [userPos, setUserPos] = useState<[number, number]>([41.0082, 28.9784]);
 
-    // --- REFACTORED: Using WalkService ---
-    const [campaigns, setCampaigns] = useState<WalkCampaign[]>([]);
-
+    // Initial GPS
     useEffect(() => {
-        walkService.getActiveCampaigns().then(setCampaigns);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => setUserPos([pos.coords.latitude, pos.coords.longitude]),
+                (err) => console.error(err)
+            );
+        }
     }, []);
 
-    // Stats
-    const todayWalks = currentUser.walks?.filter(w => new Date(w.date).toDateString() === new Date().toDateString()) || [];
-    const totalSteps = todayWalks.reduce((acc, w) => acc + w.steps, 0);
-
     return (
-        <main className="min-h-screen bg-[#F5F5FA] dark:bg-[#0B0F19] max-w-md mx-auto relative shadow-2xl overflow-hidden font-sans pb-32 transition-colors duration-500">
-
-            {/* HEADER */}
-            <header className="absolute top-0 w-full z-20 px-6 py-6 flex items-center justify-between">
-                <button onClick={() => router.back()} className="w-10 h-10 bg-white/60 dark:bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-sm transition hover:scale-105">
-                    <ArrowLeft className="w-5 h-5 text-gray-800 dark:text-white" />
-                </button>
-
-                {/* Level Badge */}
-                <div className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-white/60 dark:bg-black/40 backdrop-blur-md rounded-full border border-white/40 shadow-sm cursor-pointer hover:scale-105 transition" onClick={() => router.push('/walk/competition')}>
-                    <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg shadow-yellow-500/50">
-                        <Crown className="w-3.5 h-3.5 text-white fill-current" />
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#121212] pb-24 font-sans">
+            {/* 1. HEADER & LOCATION */}
+            <header className="px-6 py-4 flex justify-between items-center sticky top-0 z-30 bg-[#F8F9FC]/80 dark:bg-[#121212]/80 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/home')} className="w-10 h-10 rounded-full bg-white dark:bg-white/5 flex items-center justify-center shadow-sm active:scale-95 transition-transform border border-gray-100 dark:border-white/10">
+                        <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-white" />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-1 text-[#5B4D9D] font-bold text-xs uppercase tracking-wider mb-0.5">
+                            <MapPin className="w-3 h-3" />
+                            <span>Mevcut Konum</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <h1 className="text-xl font-black text-gray-900 dark:text-white">Caddebostan, İstanbul</h1>
+                            <ChevronRight className="w-5 h-5 text-gray-400" />
+                        </div>
                     </div>
-                    <span className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-tight">Level {economy.level || 5}</span>
                 </div>
-
-                <button onClick={() => setIsSettingsOpen(true)} className="w-10 h-10 bg-white/60 dark:bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-sm transition hover:scale-105">
-                    <Settings className="w-5 h-5 text-gray-800 dark:text-white" />
-                </button>
+                <div className="scale-90 origin-right">
+                    <PetSwitcher mode="compact" />
+                </div>
             </header>
 
-            {/* HERO SECTION */}
-            <HeroSection />
+            <main className="px-5 space-y-6">
 
-            {/* MAIN ACTION AREA */}
-            <div className="relative -mt-10 px-6 z-10">
-                <div className="bg-white dark:bg-[#151b2b] rounded-[2.5rem] p-6 shadow-xl border border-white/50 dark:border-white/5 flex flex-col items-center gap-6">
-
-                    {/* Stats Row */}
-                    <div className="flex w-full justify-between px-4">
-                        <div className="text-center">
-                            <div className="flex justify-center mb-1"><Zap className="w-5 h-5 text-orange-500 fill-current" /></div>
-                            <div className="text-xl font-black text-gray-900 dark:text-white">{(totalSteps * 0.04).toFixed(0)}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kcal</div>
-                        </div>
-                        <div className="w-px h-10 bg-gray-100 dark:bg-gray-800" />
-                        <div className="text-center">
-                            <div className="flex justify-center mb-1"><Timer className="w-5 h-5 text-blue-500" /></div>
-                            <div className="text-xl font-black text-gray-900 dark:text-white">{(totalSteps * 0.01).toFixed(0)}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Dakika</div>
-                        </div>
-                        <div className="w-px h-10 bg-gray-100 dark:bg-gray-800" />
-                        <div className="text-center">
-                            <div className="flex justify-center mb-1"><Footprints className="w-5 h-5 text-green-500 fill-current" /></div>
-                            <div className="text-xl font-black text-gray-900 dark:text-white">{totalSteps}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Adım</div>
-                        </div>
-                    </div>
-
-                    {/* START BUTTON */}
-                    <button
-                        onClick={() => router.push('/walk/tracking')}
-                        className="w-full h-20 bg-gradient-to-r from-green-400 to-emerald-600 rounded-[2rem] flex items-center justify-between px-2 pl-8 shadow-lg shadow-green-500/30 group active:scale-95 transition-all"
-                    >
-                        <div className="text-left">
-                            <div className="text-[10px] font-bold text-green-100 uppercase tracking-widest mb-1">MoffiWalk</div>
-                            <div className="text-2xl font-black text-white">Başlat ⚡</div>
-                        </div>
-                        <div className="w-16 h-16 bg-white/20 rounded-[1.5rem] flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform">
-                            <Footprints className="w-8 h-8 text-white fill-current" />
-                        </div>
-                    </button>
-
-                </div>
-            </div>
-
-            {/* ACTIVE CAMPAIGNS (New Feature) */}
-            <div className="mt-8 pl-6">
-                <div className="flex items-center justify-between pr-6 mb-4">
-                    <h3 className="text-lg font-black text-gray-900 dark:text-white">Aktif Görevler 🔥</h3>
-                    <span className="text-xs font-bold text-gray-400 cursor-pointer">Tümü</span>
-                </div>
-
-                <div className="flex gap-4 overflow-x-auto pr-6 pb-4 scrollbar-hide">
-                    {campaigns.length === 0 ? <div className="text-sm text-gray-400 pl-2">Görevler yükleniyor...</div> : campaigns.map(camp => (
-                        <div key={camp.id} className="min-w-[140px] p-4 bg-white dark:bg-[#151b2b] rounded-[1.5rem] shadow-sm border border-gray-100 dark:border-white/5 flex flex-col gap-3 group cursor-pointer hover:border-gray-200 dark:hover:border-white/10 transition">
-                            <div className={`w-10 h-10 ${camp.color} rounded-xl flex items-center justify-center shadow-lg shadow-opacity-30`}>
-                                <camp.icon className="w-5 h-5 text-white" />
+                {/* 2. LEADERBOARD TEASER (NEW!) */}
+                <div
+                    onClick={() => router.push('/walk/leaderboard')}
+                    className="bg-gradient-to-r from-[#240b36] to-[#c31432] p-4 rounded-3xl relative overflow-hidden shadow-xl shadow-red-900/20 cursor-pointer group"
+                >
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center border border-white/20">
+                                <Trophy className="w-6 h-6 text-yellow-400 fill-current" />
                             </div>
                             <div>
-                                <div className="text-xs font-bold text-gray-400 mb-0.5">{camp.reward}</div>
-                                <div className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{camp.title}</div>
+                                <h3 className="text-white font-black text-lg leading-tight uppercase italic">Global Arena</h3>
+                                <div className="text-white/80 text-xs font-bold">Sıralaman: <span className="text-yellow-300 text-sm">#6</span></div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* MOFFI LEAGUE SUMMARY */}
-            <div className="px-6 mt-4">
-                <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-[2rem] p-5 relative overflow-hidden shadow-lg cursor-pointer active:scale-95 transition-transform" onClick={() => router.push('/walk/competition')}>
-                    {/* Bkg Effects */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
-
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/5">
-                            <Medal className="w-6 h-6 text-yellow-400" />
-                        </div>
-                        <div className="flex-1">
-                            <div className="text-[10px] font-bold text-yellow-500/80 uppercase tracking-widest mb-1">Lig Sıralaması</div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-black text-white">#4</span>
-                                <span className="text-sm font-bold text-gray-400">/ 120 (Gümüş Ligi)</span>
+                        <div className="flex flex-col items-end">
+                            <div className="bg-white/10 px-2 py-1 rounded text-[10px] text-white font-bold h-min whitespace-nowrap mb-1">
+                                Gümüş Lig
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-yellow-400 transition-colors">
+                                <ChevronRight className="w-5 h-5 text-black" />
                             </div>
                         </div>
-                        <div className="text-xs font-bold text-white bg-white/10 px-3 py-1.5 rounded-lg border border-white/5">
-                            Liderlik Tablosu
+                    </div>
+                </div>
+
+                {/* 3. STATS SUMMARY COMPONENT */}
+                <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white dark:bg-[#1A1A1A] p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center gap-1">
+                        <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-500 mb-1">
+                            <Flame className="w-4 h-4" />
+                        </div>
+                        <span className="text-lg font-black text-gray-900 dark:text-white">324</span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Kcal</span>
+                    </div>
+                    <div className="bg-white dark:bg-[#1A1A1A] p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center gap-1">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 mb-1">
+                            <Footprints className="w-4 h-4" />
+                        </div>
+                        <span className="text-lg font-black text-gray-900 dark:text-white">4.2</span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Km</span>
+                    </div>
+                    <div className="bg-white dark:bg-[#1A1A1A] p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center gap-1">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center text-purple-500 mb-1">
+                            <Timer className="w-4 h-4" />
+                        </div>
+                        <span className="text-lg font-black text-gray-900 dark:text-white">45</span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Dk</span>
+                    </div>
+                </div>
+
+                {/* 4. DISCOVERY MAP (Interactive Preview) */}
+                <div className="relative w-full h-64 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-indigo-200/50 dark:shadow-none border border-white/50 dark:border-white/10 group">
+                    <GoogleLiveMap
+                        userPos={userPos}
+                        path={[]}
+                        isTracking={false}
+                        visitedPlaceIds={[]}
+                        places={PLACES}
+                        marks={[]}
+                    />
+
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Floating Elements on Map */}
+                    <div className="absolute top-4 left-4 right-4 flex justify-between pointer-events-none">
+                        <div className="bg-white/90 dark:bg-black/80 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 dark:text-white shadow-lg flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> 12 Moffi Arkadaşı Yakınında
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* NEARBY BUSINESS TEASER */}
-            <div className="px-6 mt-6 mb-8">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/30 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30">
-                        <Store className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-0.5">Yakınlarda Fırsat!</div>
-                        <div className="text-sm font-bold text-gray-900 dark:text-white">Starbucks (200m) - x2 Puan</div>
+                    <div className="absolute bottom-5 left-5 right-5 z-10">
+                        <h2 className="text-white font-bold text-lg mb-0.5">Keşfe Çık</h2>
+                        <p className="text-white/70 text-xs mb-4 max-w-[80%]">Çevredeki parkları, kafeleri ve ödülleri topla.</p>
+                        <button
+                            onClick={() => router.push('/walk/tracking')}
+                            className="w-full bg-[#5B4D9D] hover:bg-[#4a3e80] text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                        >
+                            <Play className="w-5 h-5 fill-current" /> Yürüyüşü Başlat
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-        </main>
+                {/* 5. NEARBY DEALS (GAMIFICATION) */}
+                <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <h3 className="font-black text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                            <Cookie className="w-5 h-5 text-orange-500" /> Yakındaki Fırsatlar
+                        </h3>
+                        <button className="text-xs font-bold text-[#5B4D9D]">Tümü</button>
+                    </div>
+                    {/* We reuse the Deals Component here if defined, or inline mock */}
+                    <WalkDeals />
+                </div>
+            </main>
+        </div>
     );
 }

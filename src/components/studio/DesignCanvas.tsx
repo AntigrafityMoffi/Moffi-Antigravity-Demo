@@ -3,24 +3,9 @@ import { useState, useRef, useEffect } from "react";
 import { Camera, Type, Sticker, Wand2, Eraser, ZoomIn, RotateCw, Box, ShoppingBag, X, Check, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// --- MOCK ASSETS ---
-const STICKERS = [
-    { id: 1, src: "https://cdn-icons-png.flaticon.com/128/1077/1077502.png", label: "Kalp" }, // Heart
-    { id: 2, src: "https://cdn-icons-png.flaticon.com/128/2171/2171991.png", label: "Pati" }, // Paw
-    { id: 3, src: "https://cdn-icons-png.flaticon.com/128/1828/1828884.png", label: "Yıldız" }, // Star
-    { id: 4, src: "https://cdn-icons-png.flaticon.com/128/616/616430.png", label: "Kemik" }, // Bone
-    { id: 5, src: "https://cdn-icons-png.flaticon.com/128/1139/1139982.png", label: "Taç" }, // Crown
-    { id: 6, src: "https://cdn-icons-png.flaticon.com/128/742/742751.png", label: "Gözlük" }, // Glasses
-];
+import { STICKERS, FONTS, COLORS } from "@/constants/studio-assets";
 
-const FONTS = [
-    { id: 'font-sans', name: 'Modern', class: 'font-sans' },
-    { id: 'font-serif', name: 'Klasik', class: 'font-serif' },
-    { id: 'font-mono', name: 'Daktilo', class: 'font-mono' },
-    { id: 'font-cursive', name: 'El Yazısı', class: 'font-cursive' }, // Requires custom class or style
-];
 
-const COLORS = ["#000000", "#FFFFFF", "#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899"];
 
 
 export function DesignCanvas({ product, onSave }: { product: any, onSave: (state: any) => void }) {

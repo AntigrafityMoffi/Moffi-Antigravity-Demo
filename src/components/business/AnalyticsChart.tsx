@@ -1,27 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
-export function AnalyticsChart() {
+interface AnalyticsChartProps {
+    data: number[];
+    labels: string[];
+}
+
+export function AnalyticsChart({ data, labels }: AnalyticsChartProps) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    const data = [45, 60, 75, 50, 80, 95, 85, 90, 110, 100, 120, 115, 130];
-    const days = data.map((_, i) => `${i + 9}:00`);
+    // If no data provided, render nothing or loader
+    if (!data || data.length === 0) return null;
 
-    // Normalizing data for SVG
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const height = 200;
+    const days = labels;
+
     const width = 800;
-    const points = data.map((val, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = height - ((val - 0) / (max - 0)) * height; // Simplified scaling
-        return `${x},${y}`;
-    }).join(" ");
+    const height = 200;
 
-    // Area fill path
-    const areaPath = `${points} ${width},${height} 0,${height}`;
+    const { points, areaPath, max } = useMemo(() => {
+        const maxVal = Math.max(...data);
+        const pts = data.map((val, i) => {
+            const x = (i / (data.length - 1)) * width;
+            const y = height - ((val - 0) / (maxVal - 0)) * height;
+            return `${x},${y}`;
+        }).join(" ");
+
+        return {
+            points: pts,
+            areaPath: `${pts} ${width},${height} 0,${height}`,
+            max: maxVal
+        };
+    }, [data]);
 
     return (
         <div className="w-full relative h-[250px] flex flex-col justify-end overflow-hidden">

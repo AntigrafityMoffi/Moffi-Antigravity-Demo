@@ -1,50 +1,97 @@
-import { Home, ShoppingCart, Stethoscope, User, PlusCircle, Hexagon } from "lucide-react";
+"use client";
+
+import { Home, ShoppingBag, User, Gamepad2, Compass, Hexagon, Utensils } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 interface BottomNavProps {
-    active?: 'home' | 'explore' | 'community' | 'vet' | 'profile';
-    className?: string; // Allow custom styling positioning
+    active?: 'home' | 'explore' | 'community' | 'game' | 'food' | 'profile';
+    className?: string;
 }
 
-export function BottomNav({ active = 'home', className }: BottomNavProps) {
+export function BottomNav({ active, className }: BottomNavProps) {
+    const pathname = usePathname();
+    // Fallback active detection if prop is not passed
+    const currentActive = active || (pathname?.includes('/home') ? 'home' :
+        pathname?.includes('/shop') ? 'explore' :
+            pathname?.includes('/community') ? 'community' :
+                pathname?.includes('/food') ? 'food' :
+                    pathname?.includes('/profile') ? 'profile' : 'home');
+
+    const navItems = [
+        { id: 'home', icon: Home, label: 'Ev', path: '/home' },
+        { id: 'explore', icon: Compass, label: 'Keşfet', path: '/shop' },
+        { id: 'community', icon: Hexagon, label: 'Topluluk', path: '/community', isCenter: true },
+        { id: 'food', icon: Utensils, label: 'Beslenme', path: '/food' },
+        { id: 'profile', icon: User, label: 'Profil', path: '/profile' },
+    ];
+
     return (
-        <div className={cn("fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-[calc(448px-3rem)] h-16 bg-[#1a1a1a] rounded-full flex items-center justify-between px-6 text-gray-400 shadow-2xl z-50 ring-1 ring-white/10", className)}>
+        <div className={cn("fixed bottom-4 left-4 right-4 z-50", className)}>
+            {/* 
+               FLOATING FROSTED GLASS BAR
+               Corner Radius: 12px
+            */}
+            <div className="w-full h-[4.5rem] bg-[#0a0a0a]/70 backdrop-blur-[40px] border border-white/10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] flex items-center justify-between px-6 rounded-[12px]">
 
-            {/* Home */}
-            <Link href="/home" className={cn("flex flex-col items-center gap-1 transition-colors", active === 'home' ? "text-white" : "hover:text-white")}>
-                <Home className="w-5 h-5" />
-                <span className="text-[9px] font-medium">Home</span>
-            </Link>
+                {navItems.map((item) => {
+                    if (item.isCenter) {
+                        return (
+                            <div key={item.id} className="relative -top-8 group px-2">
+                                <Link
+                                    href={item.path}
+                                    className="w-[4rem] h-[4rem] rounded-[1.5rem] bg-gradient-to-b from-[#2a2a2a] to-black flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.8)] border border-white/20 transition-transform duration-300 group-hover:-translate-y-2 group-active:scale-95 relative overflow-hidden"
+                                >
+                                    {/* Metallic Sheen */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-transparent opacity-50 pointer-events-none" />
 
-            {/* Shop (Formerly Explore) */}
-            <Link href="/shop" className={cn("flex flex-col items-center gap-1 transition-colors group", active === 'explore' ? "text-white" : "hover:text-white")}>
-                <ShoppingCart className={cn("w-5 h-5 group-hover:text-green-400", active === 'explore' ? "text-green-400" : "text-green-700")} />
-                <span className={cn("text-[9px] font-medium group-hover:text-green-400", active === 'explore' ? "text-green-400" : "text-green-700")}>Shop</span>
-            </Link>
+                                    {/* Hexagon Icon */}
+                                    <Hexagon
+                                        className="w-7 h-7 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] relative z-10"
+                                        strokeWidth={1.5}
+                                    />
 
-            {/* Central Community Button */}
-            <div className="relative -top-6">
-                <Link href="/community" className="w-16 h-16 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] border-4 border-[#121212] bg-gradient-to-tr from-moffi-primary via-green-400 to-teal-300 relative group overflow-hidden">
-                    {/* Animated Glow Effect */}
-                    <div className="absolute inset-0 bg-white/30 skew-x-12 -translate-x-20 group-hover:animate-[shimmer_1s_infinite] transition-all" />
+                                    {/* Active Pulse */}
+                                    {currentActive === 'community' && (
+                                        <div className="absolute inset-0 rounded-[1.5rem] border border-white/30 animate-pulse opacity-50" />
+                                    )}
+                                </Link>
+                            </div>
+                        );
+                    }
 
-                    {/* Icon */}
-                    <PlusCircle className="w-8 h-8 text-white relative z-10 drop-shadow-md" />
-                </Link>
+                    const isActive = currentActive === item.id;
+
+                    return (
+                        <Link
+                            key={item.id}
+                            href={item.path}
+                            className="flex flex-col items-center justify-center w-12 h-12 relative group"
+                        >
+                            <div className="relative">
+                                <item.icon
+                                    className={cn(
+                                        "w-6 h-6 transition-all duration-300",
+                                        isActive
+                                            ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" // Glowing Metal
+                                            : "text-slate-500 group-hover:text-slate-300" // Dull Metal
+                                    )}
+                                    strokeWidth={isActive ? 2 : 1.5}
+                                />
+                                {isActive && (
+                                    <MotionDiv className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-[0_0_5px_white]" />
+                                )}
+                            </div>
+                        </Link>
+                    );
+                })}
             </div>
-
-            {/* Vet */}
-            <button className={cn("flex flex-col items-center gap-1 transition-colors", active === 'vet' ? "text-white" : "hover:text-white")}>
-                <Stethoscope className="w-5 h-5" />
-                <span className="text-[9px] font-medium">Vet</span>
-            </button>
-
-            {/* Profile */}
-            <Link href="/profile" className={cn("flex flex-col items-center gap-1 transition-colors", active === 'profile' ? "text-white" : "hover:text-white")}>
-                <User className="w-5 h-5" />
-                <span className="text-[9px] font-medium">Profile</span>
-            </Link>
         </div>
     );
+}
+
+// Simple internal wrapper for styling
+function MotionDiv({ className }: { className: string }) {
+    return <div className={className} />
 }

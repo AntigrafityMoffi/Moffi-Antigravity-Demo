@@ -1,181 +1,321 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-    Palette,
-    Search,
-    ShoppingBag,
-    Sparkles,
-    ChevronRight,
-    Star,
-    Crown,
-    CheckCircle2,
-    ArrowRight
+    Shirt, Coffee, Dog, ShoppingBag,
+    ChevronRight, ArrowRight, Store,
+    Star, Sparkles, Search, SlidersHorizontal
 } from "lucide-react";
-import { BottomNav } from "@/components/home/BottomNav";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export default function StudioPage() {
+// --- MOCK DATA ---
+const MOFFI_PRODUCTS = [
+    {
+        id: 'tshirt-classic',
+        name: 'Premium T-Shirt',
+        category: 'Giyim',
+        price: '₺450',
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop',
+        rating: 4.9,
+        colors: ['#000000', '#ffffff', '#1a1a1a', '#2d3436']
+    },
+    {
+        id: 'hoodie-oversize',
+        name: 'Oversize Hoodie',
+        category: 'Giyim',
+        price: '₺850',
+        image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
+        rating: 4.8,
+        colors: ['#000000', '#e35f5f', '#1a1a1a']
+    },
+    {
+        id: 'ceramic-mug',
+        name: 'Seramik Kupa',
+        category: 'Ev & Yaşam',
+        price: '₺220',
+        image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=800&auto=format&fit=crop',
+        rating: 4.7,
+        colors: ['#ffffff']
+    },
+    {
+        id: 'tote-bag',
+        name: 'Kanvas Çanta',
+        category: 'Aksesuar',
+        price: '₺180',
+        image: 'https://images.unsplash.com/photo-1597484662317-c9253d3d0984?q=80&w=800&auto=format&fit=crop',
+        rating: 4.6,
+        colors: ['#f5f5dc', '#000000']
+    },
+    {
+        id: 'pet-bandana',
+        name: 'Pet Bandana',
+        category: 'Pet Giyim',
+        price: '₺150',
+        image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop',
+        rating: 4.9,
+        colors: ['#ff0000', '#0000ff']
+    },
+    {
+        id: 'phone-case',
+        name: 'Telefon Kılıfı',
+        category: 'Aksesuar',
+        price: '₺290',
+        image: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?q=80&w=800&auto=format&fit=crop',
+        rating: 4.5,
+        colors: ['#000000', '#ffffff']
+    }
+];
+
+const PARTNER_SHOPS = [
+    {
+        id: 'shop-1',
+        name: 'Pati Butik',
+        location: 'Caddebostan',
+        rating: 4.8,
+        image: 'https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=800&auto=format&fit=crop',
+        tags: ['El Yapımı', 'Aksesuar']
+    },
+    {
+        id: 'shop-2',
+        name: 'Woof Design',
+        location: 'Moda',
+        rating: 4.9,
+        image: 'https://images.unsplash.com/photo-1556905200-279565513a2d?q=80&w=800&auto=format&fit=crop',
+        tags: ['Premium', 'Giyim']
+    },
+    {
+        id: 'shop-3',
+        name: 'Happy Paws',
+        location: 'Beşiktaş',
+        rating: 4.6,
+        image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=800&auto=format&fit=crop',
+        tags: ['Oyuncak', 'Yaşam']
+    }
+];
+
+export default function StudioHubPage() {
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<'moffi' | 'partners'>('moffi');
+    const [selectedCategory, setSelectedCategory] = useState('Tümü');
+
+    const categories = ['Tümü', 'Giyim', 'Aksesuar', 'Ev & Yaşam', 'Pet Giyim'];
+
+    const filteredProducts = selectedCategory === 'Tümü'
+        ? MOFFI_PRODUCTS
+        : MOFFI_PRODUCTS.filter(p => p.category === selectedCategory);
+
     return (
-        <main className="min-h-screen bg-[#F8F9FC] dark:bg-[#000000] pb-28 font-sans selection:bg-[#5B4D9D] selection:text-white">
+        <div className="min-h-screen w-full bg-[#050505] text-white font-sans selection:bg-purple-500/30 overflow-x-hidden">
 
-            {/* 1. IMMERSIVE HERO SECTION */}
-            <header className="relative w-full h-[55vh] overflow-hidden rounded-b-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.15)] z-10 group">
-                <div className="absolute inset-0 bg-black/20 z-10" />
-                <img
-                    src="https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?q=80&w=1200"
-                    className="w-full h-full object-cover animate-in fade-in zoom-in duration-[2s] scale-105 group-hover:scale-110 transition-transform ease-out"
-                    alt="Hero"
-                />
+            {/* BACKGROUND ACCENTS */}
+            <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-purple-900/10 to-transparent pointer-events-none" />
+            <div className="fixed -top-40 -right-40 w-[600px] h-[600px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-20" />
+            {/* --- HEADER SECTION --- */}
+            <div className="relative pt-24 pb-12 px-6 md:px-20 max-w-7xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-4"
+                >
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+                        Yaratıcılığını <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Serbest Bırak.</span>
+                    </h1>
+                    <p className="text-lg text-neutral-400 max-w-xl leading-relaxed">
+                        Moffi Studio'da kendi tarzını yarat. İster Moffi'nin özel koleksiyonunu kullan, istersen şehrindeki butiklerin ürünlerini tasarla.
+                    </p>
+                </motion.div>
 
-                {/* Navbar (Absolute) */}
-                <div className="absolute top-0 left-0 right-0 p-6 z-50 flex justify-between items-center">
-                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                        <Palette className="w-5 h-5 text-white" />
-                        <span className="text-xs font-bold text-white tracking-widest uppercase">Studio</span>
+                {/* SEARCH & FILTERS BAR */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="mt-10 flex flex-col md:flex-row items-center gap-4"
+                >
+                    {/* SEARCH INPUT */}
+                    <div className="w-full md:w-96 relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <Search className="w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Ürün veya kategori ara..."
+                            className="w-full h-12 bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all placeholder:text-neutral-600"
+                        />
                     </div>
-                    <div className="flex gap-3">
-                        <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
-                            <Search className="w-5 h-5 text-white" />
-                        </button>
-                        <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
-                            <ShoppingBag className="w-5 h-5 text-white" />
-                        </button>
-                    </div>
-                </div>
+                </motion.div>
+            </div>
 
-                {/* Hero Content */}
-                <div className="absolute bottom-12 left-6 right-6 z-30">
-                    <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
+            {/* --- TABS --- */}
+            <div className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-6 md:px-20 flex items-center gap-8 h-16">
+                    <button
+                        onClick={() => setActiveTab('moffi')}
+                        className={cn(
+                            "h-full relative px-2 text-sm font-bold transition-colors",
+                            activeTab === 'moffi' ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                        )}
                     >
-                        <span className="inline-block px-3 py-1 bg-[#5B4D9D] text-white text-[10px] font-black tracking-widest uppercase rounded-lg mb-3 shadow-[0_0_20px_rgba(91,77,157,0.5)]">
-                            Yeni Koleksiyon
-                        </span>
-                        <h1 className="text-5xl font-black text-white leading-[0.9] tracking-tight mb-4 drop-shadow-2xl">
-                            Hayalindeki <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-white">
-                                Tasarımı
-                            </span> <br />
-                            Yarat.
-                        </h1>
-                        <p className="text-gray-300 text-sm font-medium leading-relaxed max-w-[80%] mb-6">
-                            Moffi Studio ile evcil dostuna özel, tamamen benzersiz ürünler tasarla. %100 Pamuk, %100 Sevgi.
-                        </p>
-
-                        <Link href="/studio/product/1">
-                            <button className="group pl-6 pr-2 py-2 bg-white text-black rounded-full font-bold text-sm flex items-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                                Şimdi Keşfet
-                                <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center group-hover:rotate-45 transition-transform">
-                                    <ArrowRight className="w-4 h-4" />
-                                </div>
-                            </button>
-                        </Link>
-                    </motion.div>
+                        Moffi Originals
+                        {activeTab === 'moffi' && <motion.div layoutId="activeTab" className="absolute bottom-0 inset-x-0 h-0.5 bg-purple-500 rounded-t-full shadow-[0_0_15px_rgba(168,85,247,0.8)]" />}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('partners')}
+                        className={cn(
+                            "h-full relative px-2 text-sm font-bold transition-colors",
+                            activeTab === 'partners' ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                        )}
+                    >
+                        Diğer İşletmeler
+                        {activeTab === 'partners' && <motion.div layoutId="activeTab" className="absolute bottom-0 inset-x-0 h-0.5 bg-blue-500 rounded-t-full shadow-[0_0_15px_rgba(59,130,246,0.8)]" />}
+                    </button>
                 </div>
-            </header>
+            </div>
 
-            {/* 2. FEATURED PARTNERS (Editoral Style) */}
-            <section className="py-10 overflow-hidden">
-                <div className="px-6 mb-5 flex items-end justify-between">
-                    <div>
-                        <span className="text-[10px] font-bold text-[#5B4D9D] uppercase tracking-widest block mb-1">Partnerler</span>
-                        <h2 className="text-2xl font-black text-gray-900 dark:text-white">Seçkin Markalar</h2>
-                    </div>
-                </div>
-
-                <div className="pl-6 overflow-x-auto scrollbar-hide flex gap-4 pr-6 pb-4">
-                    {[
-                        { name: "PawTex", image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=400", desc: "Premier Kumaş" },
-                        { name: "PetHaus", image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=400", desc: "Modern Tasarım" },
-                        { name: "Stitch", image: "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?q=80&w=400", desc: "El Yapımı" },
-                    ].map((brand, i) => (
-                        <div key={i} className="min-w-[280px] h-[320px] relative rounded-[2rem] overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all">
-                            <img src={brand.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
-
-                            <div className="absolute bottom-6 left-6 text-white">
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    <h3 className="text-xl font-bold">{brand.name}</h3>
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 fill-blue-400/20" />
-                                </div>
-                                <p className="text-xs text-gray-300 font-medium mb-4">{brand.desc}</p>
-                                <span className="text-[10px] font-bold uppercase tracking-wider border-b border-white/30 pb-0.5">Koleksiyonu Gör</span>
+            {/* --- CONTENT AREA --- */}
+            <div className="max-w-7xl mx-auto px-6 md:px-20 py-12">
+                <AnimatePresence mode="wait">
+                    {/* TAB: MOFFI ORIGINALS */}
+                    {activeTab === 'moffi' && (
+                        <motion.div
+                            key="moffi"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.4 }}
+                            className="space-y-8"
+                        >
+                            {/* Categories */}
+                            <div className="flex flex-wrap gap-2">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={cn(
+                                            "px-4 py-2 rounded-full text-xs font-bold border transition-all",
+                                            selectedCategory === cat
+                                                ? "bg-white text-black border-transparent"
+                                                : "bg-white/5 border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white"
+                                        )}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
 
-            {/* 3. MOFFI OFFICIAL STORE (Spotlight) */}
-            <section className="px-6 mb-12">
-                <div className="relative w-full bg-gradient-to-br from-[#1A1A1A] to-black rounded-[2.5rem] p-8 overflow-hidden shadow-2xl border border-white/5">
-
-                    {/* Background Glows */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#5B4D9D] rounded-full blur-[100px] opacity-30 animate-pulse" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full blur-[80px] opacity-20" />
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-6">
-                            <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                            <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">Official Store</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-8">
-                            {[
-                                { name: "Moffi Signature Hoodie", price: "499 ₺", img: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=400" },
-                                { name: "Raincoat Pro Series", price: "650 ₺", img: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=400" },
-                                { name: "Comfort Bed V2", price: "899 ₺", img: "https://images.unsplash.com/photo-1623387641168-d9803ddd3f35?q=80&w=400" },
-                                { name: "Travel Kit", price: "249 ₺", img: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?q=80&w=400" },
-                            ].map((prod, i) => (
-                                <Link key={i} href="/studio/product/1">
-                                    <div className="group cursor-pointer">
-                                        <div className="aspect-[4/5] bg-white/5 rounded-[1.5rem] overflow-hidden mb-3 relative border border-white/10">
-                                            <img src={prod.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-
-                                            {/* Add Button Overlay */}
-                                            <div className="absolute bottom-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-white text-white hover:text-black">
-                                                <ShoppingBag className="w-3.5 h-3.5" />
+                            {/* Product Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredProducts.map((product, index) => (
+                                    <motion.div
+                                        key={product.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        className="group relative bg-[#0c0c0e] rounded-3xl border border-white/5 overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-900/10 cursor-pointer"
+                                        onClick={() => router.push(`/studio/design?productId=${product.id}`)}
+                                    >
+                                        {/* Image Area */}
+                                        <div className="aspect-[4/5] relative overflow-hidden bg-white/5">
+                                            <div className="absolute top-4 left-4 z-10 px-2 py-1 bg-black/60 backdrop-blur rounded-lg text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
+                                                {product.category}
+                                            </div>
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                                            />
+                                            {/* Hover Overlay */}
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                                <div className="bg-white text-black px-6 py-3 rounded-full font-bold text-sm transform scale-90 group-hover:scale-100 transition-transform shadow-xl flex items-center gap-2">
+                                                    <Sparkles className="w-4 h-4" /> Tasarla
+                                                </div>
                                             </div>
                                         </div>
-                                        <h4 className="text-sm font-bold text-white leading-tight mb-1">{prod.name}</h4>
-                                        <p className="text-xs font-bold text-[#A78BFA]">{prod.price}</p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
 
-                        <div className="mt-8 text-center">
-                            <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition">
-                                Tüm Koleksiyonu Gör
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                                        {/* Info Area */}
+                                        <div className="p-5 space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <h3 className="font-bold text-lg leading-tight group-hover:text-purple-400 transition-colors">
+                                                    {product.name}
+                                                </h3>
+                                                <div className="flex items-center gap-1 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-1.5 py-0.5 rounded">
+                                                    <Star className="w-3 h-3 fill-current" /> {product.rating}
+                                                </div>
+                                            </div>
 
-            {/* 4. AI INSPIRATION (Horizontal Pills) */}
-            <section className="px-6 mb-24">
-                <div className="flex items-center gap-2 mb-4 text-[#5B4D9D]">
-                    <Sparkles className="w-5 h-5" />
-                    <h2 className="text-lg font-black text-gray-900 dark:text-white">AI ile İlham Al</h2>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                    {["🐶 Minimalist Çizim", "🎨 Pop Art", "🌌 Galaktik", "🌿 Doğa Temalı", "👓 Hipster Pet", "🎂 Doğum Günü"].map((tag, i) => (
-                        <button key={i} className="px-4 py-2.5 bg-white dark:bg-[#111] border border-gray-100 dark:border-gray-800 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 shadow-sm hover:scale-105 active:scale-95 transition-all">
-                            {tag}
-                        </button>
-                    ))}
-                </div>
-            </section>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex -space-x-2">
+                                                    {product.colors.map(color => (
+                                                        <div key={color} className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color }} />
+                                                    ))}
+                                                    {product.colors.length > 2 && <div className="w-4 h-4 rounded-full bg-neutral-800 text-[8px] flex items-center justify-center border border-white/20">+</div>}
+                                                </div>
+                                                <span className="font-mono text-sm opacity-50">{product.price}</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
 
-            <BottomNav />
-        </main>
+                    {/* TAB: PARTNER SHOPS */}
+                    {activeTab === 'partners' && (
+                        <motion.div
+                            key="partners"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.4 }}
+                            className="space-y-8"
+                        >
+                            <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-white/10 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-2">Yerel İşletmeleri Destekle 🏪</h3>
+                                    <p className="text-sm text-neutral-400 max-w-md">
+                                        Çevrendeki pet shop ve butiklerin özel ürünlerini tasarlayabilir, siparişini doğrudan onlardan teslim alabilirsin.
+                                    </p>
+                                </div>
+                                <Store className="w-16 h-16 text-white/10" />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {PARTNER_SHOPS.map((shop, index) => (
+                                    <motion.div
+                                        key={shop.id}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className="bg-[#0c0c0e] rounded-2xl border border-white/5 p-4 hover:border-blue-500/30 transition-all group cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <img src={shop.image} className="w-16 h-16 rounded-xl object-cover" />
+                                            <div>
+                                                <h4 className="font-bold text-lg">{shop.name}</h4>
+                                                <p className="text-xs text-neutral-500">{shop.location} • ⭐ {shop.rating}</p>
+                                            </div>
+                                            <div className="ml-auto p-2 bg-white/5 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                <ChevronRight className="w-5 h-5" />
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {shop.tags.map(tag => (
+                                                <span key={tag} className="text-[10px] uppercase font-bold px-2 py-1 bg-white/5 rounded text-neutral-400">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
     );
 }

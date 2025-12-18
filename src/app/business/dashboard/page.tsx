@@ -6,6 +6,7 @@ import { CreateCampaignModal } from "@/components/business/CreateCampaignModal";
 import { useAuth, User } from "@/context/AuthContext";
 import { ArrowUpRight, Users, Eye, MousePointerClick, Wallet, Megaphone, LucideIcon, Map as MapIcon, Bell, Calendar, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { weeklyVisitorData } from "@/data/mockBusinessData"; // Imported data
 import React from "react";
 
 export default function BusinessDashboard() {
@@ -43,6 +44,10 @@ export default function BusinessDashboard() {
 
     // Get recent 5 users for activity feed
     const recentUsers = [...allUsers].filter(u => u.role !== 'admin').sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()).slice(0, 5);
+
+    // Prepare data for chart
+    const chartData = weeklyVisitorData.map(d => d.value);
+    const chartLabels = weeklyVisitorData.map(d => d.label);
 
     return (
         <div className="flex min-h-screen bg-gray-50/50 font-sans">
@@ -144,6 +149,8 @@ export default function BusinessDashboard() {
                     <div className="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
+
+                        // ... JSX structure
                         <div className="flex justify-between items-center mb-8 relative z-10">
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Haftalık Ziyaretçi Trafiği</h3>
@@ -154,7 +161,7 @@ export default function BusinessDashboard() {
                                 <button className="px-4 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700">Aylık</button>
                             </div>
                         </div>
-                        <AnalyticsChart />
+                        <AnalyticsChart data={chartData} labels={chartLabels} />
                     </div>
 
                     {/* Proximity Alerts & Live Feed */}

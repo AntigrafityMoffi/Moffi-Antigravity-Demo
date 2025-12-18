@@ -294,12 +294,26 @@ export function SignupForm({ setView, onComplete }: { setView: (v: AuthView) => 
 
 // --- Reset Password Form ---
 export function ResetForm({ setView }: { setView: (v: AuthView) => void }) {
+    const { forgotPassword } = useAuth();
     const [sent, setSent] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [error, setError] = useState('');
 
-    const handleReset = (e: React.FormEvent) => {
+    const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSent(true);
-        setTimeout(() => setView('login'), 3000);
+        setError('');
+        setLoading(true);
+
+        const result = await forgotPassword(email);
+        setLoading(false);
+
+        if (result.success) {
+            setSent(true);
+            setTimeout(() => setView('login'), 5000);
+        } else {
+            setError(result.error || 'Bir hata oluştu.');
+        }
     };
 
     return (
@@ -317,12 +331,29 @@ export function ResetForm({ setView }: { setView: (v: AuthView) => void }) {
                         <label className="text-sm font-bold text-gray-700 ml-1">E-posta</label>
                         <div className="relative">
                             <Mail className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                            <input type="email" placeholder="ornek@moffi.pet" className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-moffi-purple-dark outline-none" required />
+                            <input
+                                type="email"
+                                placeholder="ornek@moffi.pet"
+                                className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-moffi-purple-dark outline-none"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full py-4 bg-moffi-purple-dark text-white rounded-2xl font-bold hover:bg-opacity-90 transition-colors shadow-xl shadow-indigo-100">
-                        Bağlantıyı Gönder
+                    {error && (
+                        <div className="bg-red-50 text-red-500 text-sm p-3 rounded-xl border border-red-100 font-medium">
+                            {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-4 bg-moffi-purple-dark text-white rounded-2xl font-bold hover:bg-opacity-90 transition-colors shadow-xl shadow-indigo-100 disabled:opacity-50"
+                    >
+                        {loading ? 'Gönderiliyor...' : 'Bağlantıyı Gönder'}
                     </button>
                 </form>
             ) : (

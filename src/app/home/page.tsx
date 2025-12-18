@@ -21,110 +21,203 @@ import {
     Compass,
     PlusCircle,
     MessageCircle,
-    User,
-    Shirt
+    Wind,
+    Shirt,
+    Timer, Tag, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { BottomNav } from "@/components/home/BottomNav";
+import HeroCard from "@/components/home/HeroCard";
+import { PetSwitcher } from "@/components/common/PetSwitcher";
+import { usePet } from "@/context/PetContext";
+import { GuardianModal } from "@/components/guardian/GuardianModal";
+import { DailySummaryCard } from "@/components/memory/DailySummaryCard";
 
 // --- COMPONENTS ---
 
-const NavigationBar = ({ active }: { active: string }) => {
+
+
+
+
+const Header = () => {
+    const { activePet } = usePet();
     const router = useRouter();
-    const navItems = [
-        { id: 'home', icon: Home, label: 'Ana Sayfa', path: '/home' },
-        { id: 'explore', icon: Compass, label: 'Keşfet', path: '/shop' },
-        { id: 'create', icon: PlusCircle, label: 'Oluştur', isPrimary: true, path: '/studio' },
-        { id: 'community', icon: Users, label: 'Topluluk', path: '/community' },
-        { id: 'profile', icon: User, label: 'Profil', path: '/profile' },
-    ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pt-2 pointer-events-none">
-            <div className="bg-white/90 dark:bg-[#1A1A1A]/90 backdrop-blur-2xl border border-gray-200/50 dark:border-white/10 rounded-[2.5rem] shadow-2xl p-2 flex justify-between items-center pointer-events-auto mx-auto max-w-md">
-                {navItems.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => router.push(item.path)}
-                        className={cn(
-                            "w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 relative",
-                            item.isPrimary
-                                ? "bg-[#5B4D9D] text-white shadow-lg shadow-purple-500/30 -mt-8 w-14 h-14"
-                                : (active === item.id ? "text-[#5B4D9D] bg-purple-50 dark:bg-white/5" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200")
-                        )}
-                    >
-                        <item.icon className={cn("w-6 h-6", item.isPrimary && "w-7 h-7")} />
-                        {active === item.id && !item.isPrimary && (
-                            <span className="absolute -bottom-1 w-1 h-1 bg-[#5B4D9D] rounded-full" />
-                        )}
-                    </button>
-                ))}
+        <header className="flex items-center justify-between px-6 py-4 sticky top-0 bg-[#F8F9FC]/80 dark:bg-black/80 backdrop-blur-xl z-40">
+            <div className="flex items-center gap-3">
+                {/* Active Pet Display (Premium Dynamic Pill) */}
+                <PetSwitcher mode="compact" />
             </div>
-        </div>
+            <div className="flex gap-2">
+                <button className="w-10 h-10 rounded-full bg-white dark:bg-[#1A1A1A] border border-gray-100 dark:border-white/5 flex items-center justify-center text-gray-600 dark:text-gray-300 shadow-sm relative">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-black" />
+                </button>
+            </div>
+        </header>
     );
 };
 
-const Header = () => (
-    <header className="flex items-center justify-between px-6 py-4 sticky top-0 bg-[#F8F9FC]/80 dark:bg-black/80 backdrop-blur-xl z-40">
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-pink-500 p-[2px]">
-                <img
-                    src="https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=200"
-                    className="w-full h-full rounded-full object-cover border-2 border-white dark:border-black"
-                />
-            </div>
-            <div>
-                <h1 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Günaydın, Mochi!</h1>
-                <p className="text-[10px] font-medium text-gray-500">Golden Retriever • 2 Yaş</p>
-            </div>
-        </div>
-        <div className="flex gap-2">
-            <button className="w-10 h-10 rounded-full bg-white dark:bg-[#1A1A1A] border border-gray-100 dark:border-white/5 flex items-center justify-center text-gray-600 dark:text-gray-300 shadow-sm relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-black" />
-            </button>
-        </div>
-    </header>
-);
 
-const HeroCard = () => (
-    <section className="px-6 mb-8">
-        <div className="relative w-full aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl group">
-            <img
-                src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=800"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-400 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                        Mutlu & Enerjik
-                    </span>
+// --- CONTEXT GRID ENGINE ---
+const ContextGrid = () => {
+    const router = useRouter();
+    // Context State: 'normal' | 'calm' (Travel moved to Profile)
+    const [context, setContext] = useState<'normal' | 'calm'>('normal');
+    const [isGuardianOpen, setIsGuardianOpen] = useState(false);
+
+    // --- WIDGET COMPONENTS ---
+
+    // 1. GUARDIAN (Safety First)
+    const GuardianWidget = () => (
+        <div
+            onClick={() => setIsGuardianOpen(true)}
+            className="bg-red-500 text-white p-4 rounded-[2rem] flex items-center justify-between shadow-lg shadow-red-500/20 active:scale-95 transition-transform cursor-pointer overflow-hidden relative group h-full"
+        >
+            <div className="relative z-10 flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center animate-pulse">
+                    <Bell className="w-5 h-5 fill-current" />
                 </div>
-                <h2 className="text-3xl font-black mb-6 leading-none">Bugün harika<br />hissediyor! 🐾</h2>
+                <div>
+                    <h3 className="font-bold text-sm leading-tight">Guardian<br />Protocol</h3>
+                    <p className="text-[10px] text-red-100 opacity-80">Acil Durum Ağı</p>
+                </div>
+            </div>
+            <div className="absolute right-[-10px] top-[-10px] w-20 h-20 bg-white/10 rounded-full blur-xl" />
+        </div>
+    );
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-3">
-                    {[
-                        { label: 'Enerji', val: '92%', icon: Zap, color: 'bg-yellow-500' },
-                        { label: 'Sağlık', val: '100%', icon: Activity, color: 'bg-green-500' },
-                        { label: 'Sevgi', val: '85%', icon: Heart, color: 'bg-pink-500' },
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white mb-2 shadow-sm", stat.color)}>
-                                <stat.icon className="w-3 h-3" fill="currentColor" />
-                            </div>
-                            <div className="text-lg font-bold leading-none mb-0.5">{stat.val}</div>
-                            <div className="text-[10px] opacity-70 font-medium">{stat.label}</div>
+    // 2. CALM MODE (Innovative)
+    const CalmWidget = () => (
+        <div
+            onClick={() => setContext(prev => prev === 'calm' ? 'normal' : 'calm')}
+            className={cn(
+                "p-4 rounded-[2rem] flex flex-col justify-between cursor-pointer transition-all duration-500 overflow-hidden relative border",
+                context === 'calm'
+                    ? "bg-[#1a1a2e] text-purple-200 border-purple-500/30 col-span-2 row-span-1 h-32"
+                    : "bg-[#E3F2FD] dark:bg-blue-900/20 text-blue-900 dark:text-blue-100 border-transparent active:scale-95 h-full"
+            )}
+        >
+            <div className="flex justify-between items-start relative z-10">
+                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", context === 'calm' ? "bg-purple-500/20 text-purple-300" : "bg-white dark:bg-white/10 text-blue-500")}>
+                    {context === 'calm' ? <Zap className="w-5 h-5 fill-current" /> : <Wind className="w-5 h-5" />}
+                </div>
+                {context === 'calm' && <span className="text-[10px] font-bold bg-purple-500/20 px-2 py-1 rounded-full animate-pulse">AKTİF</span>}
+            </div>
+
+            <div className="relative z-10 mt-2">
+                <h3 className="font-bold text-sm">{context === 'calm' ? "Calm Mode Aktif" : "Sakinleştir"}</h3>
+                <p className="text-[10px] opacity-70 leading-tight">
+                    {context === 'calm' ? "Anti-stres frekansı çalıyor..." : "Fırtına/Gürültü için"}
+                </p>
+            </div>
+
+            {/* Visual Effects for Calm Mode */}
+            {context === 'calm' && (
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute inset-0 bg-[#1a1a2e]/80 backdrop-blur-[1px]" />
+                </div>
+            )}
+        </div>
+    );
+
+
+
+    // 4. STANDARD MODULES
+    const StudioWidget = () => (
+        <div
+            onClick={() => router.push('/studio')}
+            className="bg-[#F3E5F5] dark:bg-purple-900/20 p-4 rounded-[2rem] relative overflow-hidden group cursor-pointer active:scale-95 transition-transform h-full"
+        >
+            <div className="relative z-10">
+                <div className="w-10 h-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-300 mb-2 shadow-sm">
+                    <Palette className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm">Studio</h3>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400">Tasarla</p>
+            </div>
+        </div>
+    );
+
+    const ShopWidget = () => (
+        <div
+            onClick={() => router.push('/shop')}
+            className="bg-[#E0F7FA] dark:bg-cyan-900/20 p-4 rounded-[2rem] relative overflow-hidden group cursor-pointer active:scale-95 transition-transform h-full"
+        >
+            <div className="relative z-10">
+                <div className="w-10 h-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-cyan-600 dark:text-cyan-300 mb-2 shadow-sm">
+                    <ShoppingBag className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm">Market</h3>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400">Keşfet</p>
+            </div>
+        </div>
+    );
+
+    return (
+        <section className="px-6 mb-10">
+            {/* Context Switcher (Demo Controls) */}
+            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar opacity-50 hover:opacity-100 transition-opacity">
+                {['normal', 'calm'].map((ctx) => (
+                    <button
+                        key={ctx}
+                        onClick={() => setContext(ctx as any)}
+                        className={cn(
+                            "text-[10px] px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 transition-colors uppercase font-bold",
+                            context === ctx ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-400"
+                        )}
+                    >
+                        {ctx}
+                    </button>
+                ))}
+            </div>
+
+            {/* Simple Grid Layout */}
+            <div className="grid grid-cols-2 gap-4">
+
+                {/* 1. Context / Widget Row */}
+                {context === 'normal' && (
+                    <>
+                        <div className="col-span-1">
+                            <GuardianWidget />
                         </div>
-                    ))}
+                        <div className="col-span-1">
+                            <CalmWidget />
+                        </div>
+                    </>
+                )}
+
+                {context === 'calm' && (
+                    <div className="col-span-2">
+                        <CalmWidget />
+                    </div>
+                )}
+
+
+                {/* 2. Core Modules Row */}
+                <StudioWidget />
+                <ShopWidget />
+
+                {/* 3. Memories / Paw Diary (Full Width) */}
+                <div className="col-span-2">
+                    <DailySummaryCard />
                 </div>
             </div>
-        </div>
-    </section>
-);
+
+            <GuardianModal
+                isOpen={isGuardianOpen}
+                onClose={() => setIsGuardianOpen(false)}
+                onActivate={() => router.push('/walk/tracking?mode=guardian')}
+            />
+        </section>
+    );
+};
+
+// --- RESTORED SECTIONS ---
 
 const QuickActions = () => {
     const router = useRouter();
@@ -154,95 +247,74 @@ const QuickActions = () => {
     );
 };
 
-const ModuleGrid = () => {
-    const router = useRouter();
-    return (
-        <section className="px-6 mb-10">
-            <div className="grid grid-cols-2 gap-4">
-                <div
-                    onClick={() => router.push('/studio')}
-                    className="col-span-1 bg-[#F3E5F5] dark:bg-purple-900/20 p-5 rounded-[2rem] relative overflow-hidden group cursor-pointer transition-transform hover:scale-[1.02]"
-                >
-                    <div className="relative z-10">
-                        <div className="w-10 h-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-300 mb-3 shadow-sm">
-                            <Palette className="w-5 h-5" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight">Moffi<br />Studio</h3>
-                        <p className="text-[10px] text-gray-500 mt-1 font-medium">Kendi tarzını yarat</p>
-                    </div>
-                    <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/art-supplies-4034825-3337482.png"
-                        className="absolute right-[-10px] bottom-[-10px] w-24 opacity-80 group-hover:scale-110 transition-transform duration-500"
-                    />
-                </div>
+// --- PREMIUM SECTIONS ---
 
-                <div
-                    onClick={() => router.push('/shop')}
-                    className="col-span-1 bg-[#E0F7FA] dark:bg-cyan-900/20 p-5 rounded-[2rem] relative overflow-hidden group cursor-pointer transition-transform hover:scale-[1.02]"
-                >
-                    <div className="relative z-10">
-                        <div className="w-10 h-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-cyan-600 dark:text-cyan-300 mb-3 shadow-sm">
-                            <ShoppingBag className="w-5 h-5" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight">Moffi<br />Shop</h3>
-                        <p className="text-[10px] text-gray-500 mt-1 font-medium">Trend ürünler</p>
-                    </div>
-                    <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-bag-4050965-3363926.png"
-                        className="absolute right-[-10px] bottom-[-10px] w-24 opacity-80 group-hover:scale-110 transition-transform duration-500"
-                    />
-                </div>
-
-                <div
-                    onClick={() => router.push('/community')}
-                    className="col-span-2 bg-gradient-to-r from-gray-900 to-gray-800 text-white p-5 rounded-[2rem] flex items-center justify-between relative overflow-hidden group cursor-pointer"
-                >
-                    <div className="relative z-10">
-                        <h3 className="font-bold text-lg mb-1">Topluluğa Katıl 🌟</h3>
-                        <p className="text-xs text-gray-300 font-medium">15k+ Pet sahibi burada!</p>
-                    </div>
-                    <div className="flex -space-x-3 mr-4">
-                        {[1, 2, 3, 4].map(i => (
-                            <img key={i} src={`https://i.pravatar.cc/100?img=${i + 10}`} className="w-8 h-8 rounded-full border-2 border-gray-800" />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const Community = () => {
+const FeaturedDeals = () => {
     const router = useRouter();
     return (
         <section className="mb-10 pl-6">
-            <div className="flex justify-between items-center pr-6 mb-4">
-                <h3 className="font-bold text-lg text-gray-900 dark:text-white">Popüler Paylaşımlar</h3>
-                <button
-                    onClick={() => router.push('/community')}
-                    className="text-xs font-bold text-[#5B4D9D]"
-                >
-                    Tümü
-                </button>
+            <div className="flex justify-between items-end pr-6 mb-5">
+                <div>
+                    <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                        <Tag className="w-5 h-5 text-orange-500" />
+                        Günün Fırsatları
+                    </h3>
+                    <p className="text-xs text-gray-400 font-medium mt-1">Sona ermeden yakala! ⚡</p>
+                </div>
+                {/* Countdown Timer Badge */}
+                <div className="bg-gray-900 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-mono font-bold">
+                    <Timer className="w-3 h-3 text-orange-400" />
+                    <span>04:21:12</span>
+                </div>
             </div>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="min-w-[280px] h-[320px] rounded-[2rem] overflow-hidden relative shadow-lg group">
-                        <img
-                            src={`https://images.unsplash.com/photo-${i === 1 ? '1548199973-03cce0bbc87b' : (i === 2 ? '1583337130417-3346a1be7dee' : '1537151608828-ea2b11777ee8')}?q=80&w=400`}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 p-5 text-white">
-                            <div className="flex items-center gap-2 mb-2">
-                                <img src={`https://i.pravatar.cc/100?img=${i + 20}`} className="w-6 h-6 rounded-full border border-white" />
-                                <span className="text-xs font-bold">@user{i}92</span>
-                            </div>
-                            <p className="text-sm font-medium leading-snug line-clamp-2">Harika bir pazar yürüyüşü! 🌳🐶 #moffipet</p>
+
+            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 pr-6 snap-x snap-mandatory">
+                {/* HERO DEAL CARD */}
+                <div
+                    onClick={() => router.push('/shop/deal/1')}
+                    className="min-w-[300px] h-[180px] bg-gradient-to-r from-orange-500 to-pink-500 rounded-[2rem] relative overflow-hidden shrink-0 snap-center shadow-lg shadow-orange-500/30 group cursor-pointer"
+                >
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                    <div className="relative z-10 p-6 h-full flex flex-col justify-center text-white">
+                        <div className="inline-block bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold mb-2 w-max border border-white/20">
+                            %40 İNDİRİM
                         </div>
-                        <button className="absolute top-4 right-4 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">
-                            <Heart className="w-4 h-4" />
-                        </button>
+                        <h4 className="font-black text-2xl leading-none mb-1">Premium<br />Somon Mama</h4>
+                        <p className="text-xs opacity-90 mb-4">Omega-3 deposu, tüy dostu.</p>
+                        <div className="flex args-center gap-2">
+                            <span className="font-bold text-lg">₺459</span>
+                            <span className="text-sm opacity-60 line-through">₺765</span>
+                        </div>
+                    </div>
+                    <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/dog-food-4965276-4128522.png"
+                        className="absolute -right-8 -bottom-8 w-48 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-12"
+                    />
+                </div>
+
+                {/* SECONDARY DEALS */}
+                {[
+                    { title: "Akıllı Tasma", price: "₺899", old: "₺1200", img: "https://cdn3d.iconscout.com/3d/premium/thumb/dog-collar-5163654-4318728.png", bg: "bg-blue-50 dark:bg-blue-900/10", tag: "bg-blue-100 text-blue-600" },
+                    { title: "Kedi Tırmalaması", price: "₺250", old: "₺350", img: "https://cdn3d.iconscout.com/3d/premium/thumb/cat-tree-5379878-4497746.png", bg: "bg-purple-50 dark:bg-purple-900/10", tag: "bg-purple-100 text-purple-600" }
+                ].map((deal, i) => (
+                    <div
+                        key={i}
+                        onClick={() => router.push('/shop')}
+                        className={cn("min-w-[160px] h-[180px] rounded-[2rem] p-4 relative flex flex-col justify-between shrink-0 snap-center group cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-white/10 transition-colors", deal.bg)}
+                    >
+                        <div className="absolute top-3 right-3">
+                            <div className={cn("text-[10px] font-bold px-2 py-1 rounded-full", deal.tag)}>FIRSAT</div>
+                        </div>
+                        <div className="flex-1 flex items-center justify-center">
+                            <img src={deal.img} className="w-24 drop-shadow-lg transition-transform group-hover:scale-110" />
+                        </div>
+                        <div>
+                            <h5 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{deal.title}</h5>
+                            <div className="flex items-baseline gap-2">
+                                <span className="font-black text-gray-900 dark:text-white">{deal.price}</span>
+                                <span className="text-[10px] text-gray-400 line-through">{deal.old}</span>
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -250,38 +322,67 @@ const Community = () => {
     );
 };
 
-const ForYou = () => {
+const FeaturedCommunity = () => {
     const router = useRouter();
     return (
         <section className="px-6 mb-24">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">Senin İçin Önerilenler</h3>
-            <div className="space-y-4">
-                <div
-                    onClick={() => router.push('/shop')}
-                    className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-white/5 flex gap-4 cursor-pointer active:scale-95 transition-transform"
+            <div className="flex justify-between items-center mb-5">
+                <div>
+                    <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500" />
+                        Öne Çıkanlar
+                    </h3>
+                    <p className="text-xs text-gray-400 font-medium mt-1">Topluluğun en iyileri 🐾</p>
+                </div>
+                <button
+                    onClick={() => router.push('/community')}
+                    className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-colors"
                 >
-                    <div className="w-20 h-20 rounded-2xl bg-orange-50 dark:bg-orange-900/10 flex items-center justify-center flex-shrink-0">
-                        <img src="https://cdn3d.iconscout.com/3d/premium/thumb/dog-food-4965276-4128522.png" className="w-16" />
+                    <ChevronRight className="w-5 h-5" />
+                </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+                {/* LARGE FEATURED POST */}
+                <div className="col-span-2 h-[280px] rounded-[2.5rem] overflow-hidden relative group cursor-pointer shadow-lg">
+                    <img
+                        src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                    {/* Floating User Pill */}
+                    <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md pl-1 pr-3 py-1 rounded-full flex items-center gap-2 border border-white/10">
+                        <img src="https://i.pravatar.cc/100?img=12" className="w-6 h-6 rounded-full border border-white" />
+                        <span className="text-xs font-bold text-white">@doglover_99</span>
                     </div>
-                    <div>
-                        <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded text-xs mb-2 inline-block">Beslenme</span>
-                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">Premium Mama İndirimi</h4>
-                        <p className="text-xs text-gray-500 mt-1">Mochi'nin favori mamalarında %20 indirim fırsatı.</p>
+
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md uppercase">Haftanın En İyisi</span>
+                            <div className="flex items-center gap-1 text-xs font-bold opacity-80"><Heart className="w-3 h-3 fill-current" /> 1.2k</div>
+                        </div>
+                        <p className="font-bold leading-tight">Mochi ile ormanda harika bir sabah koşusu! 🌲✨ #nature #golden</p>
                     </div>
                 </div>
-                <div
-                    onClick={() => router.push('/vet')}
-                    className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-white/5 flex gap-4 cursor-pointer active:scale-95 transition-transform"
-                >
-                    <div className="w-20 h-20 rounded-2xl bg-blue-50 dark:bg-blue-900/10 flex items-center justify-center flex-shrink-0">
-                        <img src="https://cdn3d.iconscout.com/3d/premium/thumb/calendar-3578848-2993888.png" className="w-14" />
+
+                {/* SMALLER GRID POSTS */}
+                {[
+                    { img: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=400", user: "catmom", likes: "854" },
+                    { img: "https://images.unsplash.com/photo-1517423568366-eb51fb598484?q=80&w=400", user: "puglife", likes: "602" }
+                ].map((post, i) => (
+                    <div key={i} className="h-[200px] rounded-[2rem] overflow-hidden relative group cursor-pointer shadow-md">
+                        <img
+                            src={post.img}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                        <div className="absolute bottom-4 left-4 text-white">
+                            <span className="text-[10px] font-bold opacity-90 block">@{post.user}</span>
+                            <div className="flex items-center gap-1 text-[10px] font-bold"><Heart className="w-3 h-3 fill-white" /> {post.likes}</div>
+                        </div>
                     </div>
-                    <div>
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded text-xs mb-2 inline-block">Hatırlatıcı</span>
-                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">Aşı Takvimi</h4>
-                        <p className="text-xs text-gray-500 mt-1">Karma aşı zamanı yaklaşıyor. Randevu almayı unutma.</p>
-                    </div>
-                </div>
+                ))}
             </div>
         </section>
     );
@@ -298,11 +399,11 @@ export default function HomePage() {
             >
                 <HeroCard />
                 <QuickActions />
-                <ModuleGrid />
-                <Community />
-                <ForYou />
+                <ContextGrid />
+                <FeaturedDeals />
+                <FeaturedCommunity />
             </motion.div>
-            <NavigationBar active="home" />
+            <BottomNav active="home" />
 
             {/* Global Gradient Blob for Atmosphere */}
             <div className="fixed top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-purple-100/30 to-transparent dark:from-purple-900/10 pointer-events-none -z-10" />

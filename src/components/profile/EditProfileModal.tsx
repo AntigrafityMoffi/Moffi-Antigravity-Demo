@@ -1,113 +1,134 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Check } from "lucide-react";
-import { useAuth, User } from "@/context/AuthContext";
+import { useState, useRef, useEffect } from "react";
+import { X, Camera, Save, User as UserIcon, Type } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { User } from "@/context/AuthContext";
 
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
+    currentUser: User | null;
+    onSave: (data: Partial<User>) => void;
 }
 
-export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
-    const { user, updateProfile } = useAuth();
+export default function EditProfileModal({ isOpen, onClose, currentUser, onSave }: EditProfileModalProps) {
+    const [name, setName] = useState("");
+    const [bio, setBio] = useState("");
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Local state for form fields
-    const [formData, setFormData] = useState({
-        name: user?.username || "",
-        username: user?.username || "", // Note: Schema uses 'username' for display name in some places
-        bio: user?.bio || ""
-    });
-
-    // Update form when user changes (e.g. open modal)
     useEffect(() => {
-        if (user) {
-            setFormData({
-                name: user.username,
-                username: user.username,
-                bio: user.bio || ""
-            });
+        if (currentUser) {
+            setName(currentUser.username);
+            setBio(currentUser.bio || "");
+            setAvatarPreview(currentUser.avatar || null);
         }
-    }, [user, isOpen]);
+    }, [currentUser, isOpen]);
 
-    if (!isOpen) return null;
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (user) {
-            updateProfile({
-                username: formData.username,
-                bio: formData.bio
-            });
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
+    };
+
+    const handleSave = () => {
+        onSave({
+            username: name,
+            bio: bio,
+            avatar: avatarPreview || undefined
+        });
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+                    />
 
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 font-poppins">Profili Düzenle</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500" />
-                    </button>
-                </div>
+                    {/* Modal */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 100, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 100, scale: 0.9 }}
+                        className="fixed inset-x-4 top-20 bottom-24 z-50 bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 rounded-[2rem] p-6 flex flex-col shadow-2xl"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Profili Düzenle</h2>
+                            <button onClick={onClose} className="p-2 bg-gray-100 dark:bg-white/5 rounded-full hover:bg-gray-200 dark:hover:bg-white/10">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Name */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Ad Soyad</label>
-                        <input
-                            value={formData.name}
-                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                            type="text"
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-moffi-purple-dark outline-none text-gray-900"
-                        />
-                    </div>
+                        {/* Avatar Edit */}
+                        <div className="flex flex-col items-center mb-6">
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="relative w-28 h-28 rounded-full border-4 border-gray-100 dark:border-white/5 cursor-pointer group overflow-hidden"
+                            >
+                                <img
+                                    src={avatarPreview || "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=400"}
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Camera className="w-8 h-8 text-white" />
+                                </div>
+                            </div>
+                            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                            <p className="text-xs text-purple-500 font-bold mt-2">Fotoğrafı Değiştir</p>
+                        </div>
 
-                    {/* Username */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Kullanıcı Adı</label>
-                        <input
-                            value={formData.username}
-                            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                            type="text"
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-moffi-purple-dark outline-none text-gray-900"
-                        />
-                    </div>
+                        {/* Inputs */}
+                        <div className="space-y-4 flex-1">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 ml-1">Kullanıcı Adı</label>
+                                <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/5">
+                                    <UserIcon className="w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="bg-transparent outline-none flex-1 text-sm font-bold text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                            </div>
 
-                    {/* Bio */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Biyografi</label>
-                        <textarea
-                            value={formData.bio}
-                            onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                            rows={4}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-moffi-purple-dark outline-none resize-none text-gray-900"
-                        />
-                    </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 ml-1">Biyografi</label>
+                                <div className="flex items-start gap-2 bg-gray-50 dark:bg-white/5 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/5 h-24">
+                                    <Type className="w-4 h-4 text-gray-400 mt-1" />
+                                    <textarea
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
+                                        className="bg-transparent outline-none flex-1 text-sm text-gray-900 dark:text-white resize-none"
+                                        placeholder="Kendinden bahset..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 mt-6 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                        {/* Save Button */}
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleSave}
+                            className="mt-6 w-full py-4 bg-[#5B4D9D] hover:bg-[#4a3e80] rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
                         >
-                            İptal
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex-1 py-3 bg-moffi-purple-dark text-white rounded-xl font-bold hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
-                        >
-                            <Check className="w-4 h-4" />
-                            Kaydet
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                            <Save className="w-5 h-5" /> Değişiklikleri Kaydet
+                        </motion.button>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
     );
 }
