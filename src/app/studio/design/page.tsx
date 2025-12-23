@@ -17,9 +17,9 @@ function StudioDesignContent() {
 
     useEffect(() => {
         const loadProduct = async () => {
-            if (!productId) return;
             setLoading(true);
-            const p = await ProductMockService.getProductById(productId);
+            const idToLoad = productId || 'tshirt-classic'; // Fallback to default
+            const p = await ProductMockService.getProductById(idToLoad);
             setProduct(p);
             setLoading(false);
         };
