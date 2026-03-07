@@ -11,6 +11,7 @@ export interface User {
     role: UserRole;
     avatar?: string;
     bio?: string;
+      cover_photo?: string;
     joinedAt: string;
     stats: {
         posts: number;
